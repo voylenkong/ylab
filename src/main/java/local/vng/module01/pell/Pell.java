@@ -14,8 +14,8 @@ public class Pell {
      * @param   n   Входящее число для вычисления n-ого числа Пелля
      * @return  n-ое число Пелля
      */
-    public static int getPell(int n) {
-        int result = 0;
+    public static long getPell(int n) {
+        long result = 0;
 
         if (n == 0) {
             return 0;
@@ -26,8 +26,8 @@ public class Pell {
         }
 
         if (n >= 2) {
-            int prev = 1;
-            int beforePrev = 0;
+            long prev = 1;
+            long beforePrev = 0;
             result = 1;
             for (int i = 1; i < n; i++) {
                 result = 2 * prev + beforePrev;
