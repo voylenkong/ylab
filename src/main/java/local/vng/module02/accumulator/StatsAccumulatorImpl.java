@@ -1,59 +1,70 @@
-package local.vng.module02.statsaccumulator;
+package local.vng.module02.accumulator;
 
 /**
- * StatsAccumulator
+ * StatsAccumulatorImpl
+ * <p>
+ * Имплементация {@link StatsAccumulator}
  *
- * @author VoylenkoNG
- * 11.03.2023
+ * @author VoylenkoNG 11.03.2023
  */
-public class StatsAccumulatorImpl implements StatsAccumulator{
+public class StatsAccumulatorImpl implements StatsAccumulator {
 
-  private int min;
-  private int max;
-  private int count;
+    /**
+     * Минимальное переданное число
+     */
+    private int min;
+    /**
+     * Максимаольное переданное число
+     */
+    private int max;
+    /**
+     * Количество всех переданных чисел
+     */
+    private int count;
+    /**
+     * Среднее арифметическое всех переданных чисел
+     */
+    private Double avg = 0.0;
 
-  private int sum;
-  private Double avg;
-
-  public StatsAccumulatorImpl() {
-
-  }
-
-  @Override
-  public void add(int value) {
-    if (this.min > value) {
-      this.min = value;
+    /**
+     * Конструктор
+     */
+    public StatsAccumulatorImpl() {
     }
 
-    if (this.max < value) {
-      this.max = value;
+    @Override
+    public void add(int value) {
+        if (this.count == 0) {
+            this.min = value;
+            this.max = value;
+        } else if (this.min > value) {
+            this.min = value;
+        } else if (this.max < value) {
+            this.max = value;
+        }
+
+        this.avg = (this.avg * this.count + value) / (this.count + 1);
+
+        this.count++;
     }
 
-    this.count++;
+    @Override
+    public int getMin() {
+        return this.min;
+    }
 
-    this.sum += value;
+    @Override
+    public int getMax() {
+        return this.max;
+    }
 
-    this.avg = (double)this.sum / this.count;
+    @Override
+    public int getCount() {
+        return this.count;
+    }
 
-  }
-
-  @Override
-  public int getMin() {
-    return this.min;
-  }
-
-  @Override
-  public int getMax() {
-    return this.max;
-  }
-
-  @Override
-  public int getCount() {
-    return this.count;
-  }
-
-  @Override
-  public Double getAvg() {
-    return this.avg;
-  }
+    @Override
+    public Double getAvg() {
+        return this.avg;
+    }
 }

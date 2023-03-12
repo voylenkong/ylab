@@ -1,28 +1,40 @@
-package local.vng.module02.ratelimitedprinter;
+package local.vng.module02.printer;
+
+import local.vng.module02.accumulator.StatsAccumulator;
 
 /**
- * RateLimitedPrinter
+ * RateLimitedPrinterImpl
+ * <p>
+ * Имплементация {@link RateLimitedPrinter}
  *
- * @author VoylenkoNG
- * 11.03.2023
+ * @author VoylenkoNG 11.03.2023
  */
-public class RateLimitedPrinter {
+public class RateLimitedPrinterImpl implements RateLimitedPrinter {
 
-  private int interval;
+    /**
+     * Интервал, через который возможна печать
+     */
+    private int interval;
+    /**
+     * Время последней печати в милисекундах
+     */
+    private long lastPrintTime;
 
-  private long lastPrintTime;
-
-  public RateLimitedPrinter(int interval) {
-    this.interval = interval;
-    this.lastPrintTime = 0;
-  }
-
-  public void print(String message) {
-    if (System.currentTimeMillis() - this.lastPrintTime >= interval) {
-      System.out.println(message);
-      this.lastPrintTime = System.currentTimeMillis();
+    /**
+     * Конструктор с параметром
+     *
+     * @param interval Интервал, через который возможна печать
+     */
+    public RateLimitedPrinterImpl(int interval) {
+        this.interval = interval;
+        this.lastPrintTime = 0;
     }
 
-  }
-
+    @Override
+    public void print(String message) {
+        if (System.currentTimeMillis() - this.lastPrintTime >= interval) {
+            System.out.println(message);
+            this.lastPrintTime = System.currentTimeMillis();
+        }
+    }
 }
