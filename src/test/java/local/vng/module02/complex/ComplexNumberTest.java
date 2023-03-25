@@ -12,7 +12,7 @@ import org.junit.Test;
  * 11.03.2023
  */
 public class ComplexNumberTest {
-  
+
   @Test
   public void testAdd() {
     var a1 = new ComplexNumber(5, -6);
