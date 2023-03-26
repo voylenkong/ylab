@@ -32,3 +32,4 @@ target/
 
 # Properties
 *.properties
+/src/main/resources/data.txt
