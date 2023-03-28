@@ -11,9 +11,12 @@ import local.vng.lesson04.DbUtil;
 import local.vng.lesson04.RabbitMQUtil;
 import local.vng.lesson04.eventsourcing.message.MQCreatePerson;
 import local.vng.lesson04.eventsourcing.message.MQDeletePerson;
+import local.vng.lesson04.eventsourcing.message.MqType;
 import org.apache.log4j.BasicConfigurator;
 
 import static java.util.Objects.nonNull;
+import static local.vng.lesson04.eventsourcing.message.MqType.CREATE;
+import static local.vng.lesson04.eventsourcing.message.MqType.DELETE;
 
 /**
  * DbApp
@@ -35,36 +38,33 @@ public class DbApp {
 
         DbService dbService = new DbService(dataSource);
 
-        String queueDelete = "deletePerson";
-        String queueCreate = "createPerson";
+        String queue = "person";
 
         try (com.rabbitmq.client.Connection connection = connectionFactory.newConnection();
              Channel channel = connection.createChannel();
         ) {
             while (!Thread.currentThread().isInterrupted()) {
-                GetResponse messageDelete = channel.basicGet(queueDelete, true);
-                GetResponse messageCreate = channel.basicGet(queueCreate, true);
+                GetResponse message = channel.basicGet(queue, true);
 
-                if (nonNull(messageDelete)) {
-                    String receivedDelete = new String(messageDelete.getBody());
-
+                if (nonNull(message)) {
+                    MqType mqType = MqType.valueOf(message.getProps().getHeaders().get("mqType").toString());
+                    String received = new String(message.getBody());
                     ObjectMapper objectMapper = new ObjectMapper();
-                    MQDeletePerson mqDeletePerson = objectMapper.readValue(receivedDelete, MQDeletePerson.class);
+                    if (DELETE.equals(mqType)) {
 
-                    dbService.deletePerson(mqDeletePerson.getId());
-                }
+                        MQDeletePerson mqDeletePerson = objectMapper.readValue(received, MQDeletePerson.class);
 
-                if (nonNull(messageCreate)) {
-                    String receivedCreate = new String(messageCreate.getBody());
+                        dbService.deletePerson(mqDeletePerson.getId());
+                    } else if(CREATE.equals(mqType)) {
 
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    MQCreatePerson mqCreatePerson = objectMapper.readValue(receivedCreate, MQCreatePerson.class);
+                        MQCreatePerson mqCreatePerson = objectMapper.readValue(received, MQCreatePerson.class);
 
-                    dbService.savePerson(
-                            mqCreatePerson.getId(),
-                            mqCreatePerson.getName(),
-                            mqCreatePerson.getLastName(),
-                            mqCreatePerson.getMiddleName());
+                        dbService.savePerson(
+                                mqCreatePerson.getId(),
+                                mqCreatePerson.getName(),
+                                mqCreatePerson.getLastName(),
+                                mqCreatePerson.getMiddleName());
+                    }
                 }
             }
         }

@@ -1,12 +1,14 @@
 package local.vng.lesson04.eventsourcing.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import local.vng.lesson04.eventsourcing.Person;
 import local.vng.lesson04.eventsourcing.message.MQCreatePerson;
 import local.vng.lesson04.eventsourcing.message.MQDeletePerson;
+import local.vng.lesson04.eventsourcing.message.MqType;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -15,7 +17,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -34,10 +38,8 @@ public class PersonApiImpl implements PersonApi {
     private static final String SELECT_PERSON_BY_ID = "SELECT * FROM person WHERE person_id = ?";
     private static final String SELECT_PERSON_ALL = "SELECT * FROM person";
     private static final String MQ_EXCHANGE_NAME = "exc";
-    private static final String MQ_DELETE_QUEUE_NAME = "deletePerson";
-    private static final String MQ_DELETE_ROUTING_KEY = "del";
-    private static final String MQ_CREATE_QUEUE_NAME = "createPerson";
-    private static final String MQ_CREATE_ROUTING_KEY = "crt";
+    private static final String MQ_QUEUE_NAME = "person";
+    private static final String MQ_ROUTING_KEY = "key";
 
     public PersonApiImpl(DataSource dataSource, ConnectionFactory connectionFactory) {
         this.dataSource = dataSource;
@@ -50,14 +52,18 @@ public class PersonApiImpl implements PersonApi {
              Channel channel = connection.createChannel();
         ) {
             channel.exchangeDeclare(MQ_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
-            channel.queueDeclare(MQ_DELETE_QUEUE_NAME, true, false, false, null);
-            channel.queueBind(MQ_DELETE_QUEUE_NAME, MQ_EXCHANGE_NAME, MQ_DELETE_ROUTING_KEY);
+            channel.queueDeclare(MQ_QUEUE_NAME, true, false, false, null);
+            channel.queueBind(MQ_QUEUE_NAME, MQ_EXCHANGE_NAME, MQ_ROUTING_KEY);
 
             ObjectMapper objectMapper = new ObjectMapper();
             MQDeletePerson mQDeletePerson = new MQDeletePerson(personId);
             String message = objectMapper.writeValueAsString(mQDeletePerson);
 
-            channel.basicPublish(MQ_EXCHANGE_NAME, MQ_DELETE_ROUTING_KEY, null, message.getBytes());
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("mqType", MqType.DELETE.name());
+
+            AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder().headers(headers).build();
+            channel.basicPublish(MQ_EXCHANGE_NAME, MQ_ROUTING_KEY, basicProperties, message.getBytes());
         } catch (IOException | TimeoutException e) {
             System.out.println(e.getMessage());
         }
@@ -69,14 +75,19 @@ public class PersonApiImpl implements PersonApi {
              Channel channel = connection.createChannel();
         ) {
             channel.exchangeDeclare(MQ_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
-            channel.queueDeclare(MQ_CREATE_QUEUE_NAME, true, false, false, null);
-            channel.queueBind(MQ_CREATE_QUEUE_NAME, MQ_EXCHANGE_NAME, MQ_CREATE_ROUTING_KEY);
+            channel.queueDeclare(MQ_QUEUE_NAME, true, false, false, null);
+            channel.queueBind(MQ_QUEUE_NAME, MQ_EXCHANGE_NAME, MQ_ROUTING_KEY);
 
             ObjectMapper objectMapper = new ObjectMapper();
             MQCreatePerson mqCreatePerson = new MQCreatePerson(personId, firstName, lastName, middleName);
             String message = objectMapper.writeValueAsString(mqCreatePerson);
 
-            channel.basicPublish(MQ_EXCHANGE_NAME, MQ_CREATE_ROUTING_KEY, null, message.getBytes());
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("mqType", MqType.CREATE.name());
+
+            AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder().headers(headers).build();
+
+            channel.basicPublish(MQ_EXCHANGE_NAME, MQ_ROUTING_KEY, basicProperties, message.getBytes());
         } catch (IOException | TimeoutException e) {
             System.out.println(e.getMessage());
         }
