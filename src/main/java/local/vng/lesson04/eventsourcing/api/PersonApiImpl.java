@@ -116,7 +116,7 @@ public class PersonApiImpl implements PersonApi {
 
     @Override
     public List<Person> findAll() {
-        var result = new ArrayList<Person>();
+        List<Person> result = new ArrayList<>();
         try (Connection connection = dataSource.getConnection();
              PreparedStatement ps = connection.prepareStatement(SELECT_PERSON_ALL);
         ) {

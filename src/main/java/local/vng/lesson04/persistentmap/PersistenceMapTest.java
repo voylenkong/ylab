@@ -20,9 +20,10 @@ public class PersistenceMapTest {
         Scanner scanner = new Scanner(System.in);
         String operation;
 
-        while (true) {
+        boolean isContinue = true;
+        while (isContinue) {
             System.out.println("init    - инициализировать persistent map ");
-            System.out.println("hasKey   - проверить наличие ключа ");
+            System.out.println("hasKey  - проверить наличие ключа ");
             System.out.println("getKeys - получить лист ключей ");
             System.out.println("get     - найти значение по ключу ");
             System.out.println("remove  - удалить значение по ключу ");
@@ -73,9 +74,9 @@ public class PersistenceMapTest {
                 case ("clear") -> {
                     persistentMap.clear();
                 }
-            }
-            if (operation.equals("exit")) {
-                break;
+                case("exit") -> {
+                    isContinue = false;
+                }
             }
           System.out.println();
         }

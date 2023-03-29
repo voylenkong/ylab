@@ -31,7 +31,8 @@ public class ApiApp {
         Scanner scanner = new Scanner(System.in);
         String operation;
 
-        while (true) {
+        boolean isContinue = true;
+        while (isContinue) {
             System.out.println("del     - удалить пользователя по id ");
             System.out.println("save    - сохранить пользователя ");
             System.out.println("find    - найти пользователя по id ");
@@ -74,9 +75,9 @@ public class ApiApp {
                 case ("findAll") -> {
                     System.out.println(personApi.findAll());
                 }
-            }
-            if (operation.equals("exit")) {
-                break;
+                case("exit") -> {
+                    isContinue = false;
+                }
             }
         }
 

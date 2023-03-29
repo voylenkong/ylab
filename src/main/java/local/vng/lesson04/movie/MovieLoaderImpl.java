@@ -47,7 +47,7 @@ public class MovieLoaderImpl implements MovieLoader {
     private static List<Movie> getMovies(File file) {
         CsvParser csvParser = new CsvParser();
 
-        var records = csvParser.parseCsv(file, ";");
+        List<Map<String, String>> records = csvParser.parseCsv(file, ";");
 
         List<Movie> movies = new ArrayList<>();
         for (Map<String, String> record : records) {
