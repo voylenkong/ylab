@@ -49,9 +49,10 @@ WrongPasswordException с текстом “Пароль и подтвержде
 ---
 FileSort
 Внешняя сортировка слиянием
-
+---
 
 Информация по технологиям:
+---
 1. Maven 3.8.1
 2. Project Lombok
 3. JUnit
