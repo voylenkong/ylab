@@ -1,6 +1,7 @@
 package io.ylab.intensive.lesson05.eventsourcing.db;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.GetResponse;
@@ -15,6 +16,11 @@ import static io.ylab.intensive.lesson05.eventsourcing.message.MqType.CREATE;
 import static io.ylab.intensive.lesson05.eventsourcing.message.MqType.DELETE;
 
 public class DbApp {
+
+    private static final String MQ_EXCHANGE_NAME = "exc";
+    private static final String MQ_QUEUE_NAME = "person";
+    private static final String MQ_ROUTING_KEY = "key";
+
     public static void main(String[] args) throws Exception {
         BasicConfigurator.configure();
 
@@ -23,13 +29,15 @@ public class DbApp {
         DbService dbService = applicationContext.getBean(DbService.class);
         ConnectionFactory connectionFactory = applicationContext.getBean(ConnectionFactory.class);
 
-        String queue = "person";
-
         try (com.rabbitmq.client.Connection connection = connectionFactory.newConnection();
              Channel channel = connection.createChannel();
         ) {
+            channel.exchangeDeclare(MQ_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+            channel.queueDeclare(MQ_QUEUE_NAME, true, false, false, null);
+            channel.queueBind(MQ_QUEUE_NAME, MQ_EXCHANGE_NAME, MQ_ROUTING_KEY);
+
             while (!Thread.currentThread().isInterrupted()) {
-                GetResponse message = channel.basicGet(queue, true);
+                GetResponse message = channel.basicGet(MQ_QUEUE_NAME, true);
 
                 if (nonNull(message)) {
                     MqType mqType = MqType.valueOf(message.getProps().getHeaders().get("mqType").toString());

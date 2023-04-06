@@ -5,7 +5,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.GetResponse;
 import io.ylab.intensive.lesson05.messagefilter.db.InitDbImpl;
-import io.ylab.intensive.lesson05.messagefilter.mq.InitMqImpl;
 import io.ylab.intensive.lesson05.messagefilter.service.CensorService;
 import org.apache.log4j.BasicConfigurator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -38,22 +37,22 @@ public class MessageFilterApp {
         InitDbImpl initDb = applicationContext.getBean(InitDbImpl.class);
         initDb.initDb(new File(file));
 
-        InitMqImpl initMq = applicationContext.getBean(InitMqImpl.class);
-        initMq.initMq(MQ_EXCHANGE_NAME, MQ_INPUT_QUEUE, MQ_INPUT_ROUTING_KEY);
-
         ConnectionFactory connectionFactory = applicationContext.getBean(ConnectionFactory.class);
         CensorService service = applicationContext.getBean(CensorService.class);
 
         try (com.rabbitmq.client.Connection connection = connectionFactory.newConnection();
              Channel channel = connection.createChannel();
         ) {
+            channel.exchangeDeclare(MQ_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
+            channel.queueDeclare(MQ_INPUT_QUEUE, true, false, false, null);
+            channel.queueBind(MQ_INPUT_QUEUE, MQ_EXCHANGE_NAME, MQ_INPUT_ROUTING_KEY);
+
             while (!Thread.currentThread().isInterrupted()) {
                 GetResponse message = channel.basicGet(MQ_INPUT_QUEUE, true);
 
                 if (nonNull(message)) {
                     String censoredMessageFromInput = service.censorSentence(new String(message.getBody()));
 
-                    channel.exchangeDeclare(MQ_EXCHANGE_NAME, BuiltinExchangeType.DIRECT);
                     channel.queueDeclare(MQ_OUTPUT_QUEUE, true, false, false, null);
                     channel.queueBind(MQ_OUTPUT_QUEUE, MQ_EXCHANGE_NAME, MQ_OUTPUT_ROUTING_KEY);
                     channel.basicPublish(MQ_EXCHANGE_NAME, MQ_OUTPUT_ROUTING_KEY, null, censoredMessageFromInput.getBytes());
