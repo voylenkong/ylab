@@ -1,4 +1,4 @@
-Модуль 4
+Модуль 4. PostgreSQL и RabbitMQ
 ---
 ---
 Movie Database
