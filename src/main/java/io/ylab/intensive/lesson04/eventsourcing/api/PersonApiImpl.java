@@ -1,16 +1,14 @@
-package io.ylab.intensive.lesson05.eventsourcing.api;
+package io.ylab.intensive.lesson04.eventsourcing.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
-import io.ylab.intensive.lesson05.eventsourcing.Person;
-import io.ylab.intensive.lesson05.eventsourcing.message.MQCreatePerson;
-import io.ylab.intensive.lesson05.eventsourcing.message.MQDeletePerson;
-import io.ylab.intensive.lesson05.eventsourcing.message.MqType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import io.ylab.intensive.lesson04.eventsourcing.Person;
+import io.ylab.intensive.lesson04.eventsourcing.message.MQCreatePerson;
+import io.ylab.intensive.lesson04.eventsourcing.message.MQDeletePerson;
+import io.ylab.intensive.lesson04.eventsourcing.message.MqType;
 
 import javax.sql.DataSource;
 import java.io.IOException;
@@ -32,18 +30,17 @@ import java.util.concurrent.TimeoutException;
  * @author VoylenkoNG
  * 25.03.2023
  */
-@Component
 public class PersonApiImpl implements PersonApi {
 
     private DataSource dataSource;
     private ConnectionFactory connectionFactory;
+
     private static final String SELECT_PERSON_BY_ID = "SELECT * FROM person WHERE person_id = ?";
     private static final String SELECT_PERSON_ALL = "SELECT * FROM person";
     private static final String MQ_EXCHANGE_NAME = "exc";
     private static final String MQ_QUEUE_NAME = "person";
     private static final String MQ_ROUTING_KEY = "key";
 
-    @Autowired
     public PersonApiImpl(DataSource dataSource, ConnectionFactory connectionFactory) {
         this.dataSource = dataSource;
         this.connectionFactory = connectionFactory;
