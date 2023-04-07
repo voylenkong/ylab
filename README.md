@@ -1,18 +1,18 @@
-Стажировка в YLab
+Интенсив по Java в YLab
 ---
 ---
-[Модуль 1](module1.md)
+[1. Основы Java](module1.md)
 
 ---
-[Модуль 2](module2.md)
+[2. ООП](module2.md)
 
 ---
-[Модуль 3](module3.md)
+[3. Коллекции и работа с файлами](module3.md)
 
 ---
-[Модуль 4](module4.md)
+[4. PostgreSQL и RabbitMQ](module4.md)
 
 ---
-[Модуль 5](module5.md)
+[5. Основы Spring](module5.md)
 
 ---
